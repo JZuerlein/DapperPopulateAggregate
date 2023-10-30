@@ -1,0 +1,60 @@
+﻿CREATE TABLE Customer
+(
+	CustomerId INT NOT NULL IDENTITY,
+	[Name] VARCHAR(50),
+
+	CONSTRAINT [PK_CustomerId] PRIMARY KEY CLUSTERED (CustomerId ASC) WITH (FILLFACTOR = 90)
+)
+
+GO
+
+CREATE TABLE [Order]
+(
+	OrderId INT NOT NULL IDENTITY,
+	CustomerId INT NOT NULL,
+	OrderNumber VARCHAR(10) NOT NULL,
+
+	CONSTRAINT [PK_OrderId] PRIMARY KEY CLUSTERED (OrderId ASC) WITH (FILLFACTOR = 90),
+	CONSTRAINT [FK_Order_CustomerId] FOREIGN KEY (CustomerId) REFERENCES [Customer](CustomerId)
+)
+
+GO
+
+CREATE TABLE [Product]
+(
+	ProductId INT NOT NULL IDENTITY,
+	[Name] VARCHAR(50) NOT NULL,
+	Price MONEY NOT NULL,
+
+	CONSTRAINT [PK_ProductId] PRIMARY KEY CLUSTERED (ProductId ASC) WITH (FILLFACTOR = 90),
+)
+
+GO
+
+CREATE TABLE OrderItem
+(
+	OrderItemId INT NOT NULL IDENTITY,
+	OrderId INT NOT NULL,
+	ProductId INT NOT NULL,
+	Qty INT NOT NULL,
+	PriceCharged MONEY NOT NULL,
+
+	CONSTRAINT [PK_OrderItemId] PRIMARY KEY CLUSTERED (OrderItemId ASC) WITH (FILLFACTOR = 90),
+	CONSTRAINT [FK_OrderItem_OrderId] FOREIGN KEY (OrderId) REFERENCES [Order](OrderId),
+	CONSTRAINT [FK_OrderItem_ProductId] FOREIGN KEY (ProductId) REFERENCES [Product](ProductId)
+)
+
+INSERT INTO Product ([Name], Price)
+VALUES ('Car', 35000),
+	   ('Truck', 40000)
+
+INSERT INTO Customer ([Name])
+VALUES ('John Doe'),
+	   ('Jane Doe')
+
+INSERT INTO [Order] (CustomerId, OrderNumber)
+VALUES (1, 'Order-1')
+
+INSERT INTO OrderItem (OrderId, ProductId, Qty, PriceCharged)
+VALUES (1, 1, 1, 34500),
+	   (1, 2, 1, 39500)

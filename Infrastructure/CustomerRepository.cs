@@ -2,6 +2,7 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Diagnostics;
 
 namespace Infrastructure
 {
@@ -25,7 +26,7 @@ namespace Infrastructure
         const string sqlBase = @"SELECT CustomerId, [Name] FROM Customer
                                WHERE CustomerId IN (SELECT CustomerId FROM @Customers);
 
-                               SELECT OrderId, OrderNumber, CustomerId FROM[Order]
+                               SELECT OrderId, OrderNumber, Customer.CustomerId FROM [Order]
                                WHERE CustomerId IN (SELECT CustomerId FROM @Customers);
 
                                SELECT OrderItemId, [Order].OrderId, Qty, PriceCharged,
@@ -41,19 +42,19 @@ namespace Infrastructure
 
         public async Task<IEnumerable<Customer>> GetByCustomerId(CustomerId customerId)
         {
-            string sqlFilter = @"DECLARE @Customers TABLE (CustomerId INT); 
+            string sqlFilter = @"DECLARE @Customers TABLE (CustomerId INT PRIMARY KEY); 
 
                                  INSERT INTO @Customers (CustomerId)
                                  SELECT CustomerId FROM Customer
                                  WHERE CustomerId = @CustomerId; ";
 
             object param = new { CustomerId = customerId.Value };
-            return await Get(sqlFilter, param);
+            return await Get(sqlFilter, param); 
         }
 
         public async Task<IEnumerable<Customer>> GetByName(string searchName)
         {
-            string sqlFilter = @"DECLARE @Customers TABLE (CustomerId INT); 
+            string sqlFilter = @"DECLARE @Customers TABLE (CustomerId INT PRIMARY KEY); 
 
                                  INSERT INTO @Customers (CustomerId)
                                  SELECT CustomerId FROM Customer

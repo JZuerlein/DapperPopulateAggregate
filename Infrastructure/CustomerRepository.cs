@@ -26,7 +26,7 @@ namespace Infrastructure
         const string sqlBase = @"SELECT CustomerId, [Name] FROM Customer
                                WHERE CustomerId IN (SELECT CustomerId FROM @Customers);
 
-                               SELECT OrderId, OrderNumber, Customer.CustomerId FROM [Order]
+                               SELECT OrderId, OrderNumber, [Order].CustomerId FROM [Order]
                                WHERE CustomerId IN (SELECT CustomerId FROM @Customers);
 
                                SELECT OrderItemId, [Order].OrderId, Qty, PriceCharged,

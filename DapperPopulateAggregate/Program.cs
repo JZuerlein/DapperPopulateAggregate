@@ -6,6 +6,7 @@ var customers = await repository.GetByName("%j%");
 
 foreach (var customer in customers)
 {
+    Console.WriteLine(@"CustomerId = {0}", customer.CustomerId);
     Console.WriteLine(customer.Name);
     foreach(var order in customer.Orders)
     {

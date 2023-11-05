@@ -43,9 +43,21 @@ namespace Infrastructure
             {
                 var memberExpression = (MemberExpression)expression;
                 var propertyInfo = (PropertyInfo)memberExpression.Member;
-                var propertyOwnerExpression = (MemberExpression)memberExpression.Expression;
-                propertyOwner = Expression.Lambda(propertyOwnerExpression).Compile().DynamicInvoke();
-                propertyInfo.SetValue(propertyOwner, value, null);
+
+                if (memberExpression.Expression == null) // Occurs when it's a static property
+                {
+                    propertyInfo.SetValue(expression, value);
+                }
+                else
+                {
+                    var propertyOwnerExpression = (MemberExpression)memberExpression.Expression;
+                    var delegateExpr = Expression.Lambda(propertyOwnerExpression).Compile();
+
+                    if (delegateExpr == null) throw new NullReferenceException();
+ 
+                    propertyOwner = delegateExpr.DynamicInvoke();
+                    propertyInfo.SetValue(propertyOwner, value, null);
+                }
             }
 
             if (expression is UnaryExpression)

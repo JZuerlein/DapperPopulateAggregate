@@ -82,12 +82,12 @@ namespace Infrastructure
 
                 foreach (var order in orders)
                 {
-                    SetBackingField(order, "_orderItems", orderItems.Where(_ => _.OrderId == order.OrderId).ToList());
+                    SetBackingField(order, Order.OrderItemsFieldName, orderItems.Where(_ => _.OrderId == order.OrderId).ToList());
                 }
 
                 foreach (var customer in customers)
                 {
-                    SetBackingField(customer, "_orders", orders.Where(_ => _.CustomerId == customer.CustomerId.Value).ToList());
+                    SetBackingField(customer, Customer.OrdersFieldName, orders.Where(_ => _.CustomerId == customer.CustomerId.Value).ToList());
                 }
             }
 

@@ -3,6 +3,7 @@
     public class Order
     {
         private readonly List<OrderItem> _orderItems = new List<OrderItem>();
+        public static readonly string OrderItemsFieldName = nameof(_orderItems);
 
         public Order() { }
 

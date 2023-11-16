@@ -1,8 +1,13 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,30 +15,7 @@ namespace Infrastructure
 {
     public abstract class RepositoryBase
     {
-
-        public static IEnumerable<FieldInfo> GetFields(Type type)
-        {
-            if (type == null) return Enumerable.Empty<FieldInfo>();
-
-            var flags = BindingFlags.Public | 
-                        BindingFlags.Instance | 
-                        BindingFlags.NonPublic | 
-                        BindingFlags.Static | 
-                        BindingFlags.DeclaredOnly;
-
-            return type.GetFields(flags).Concat(GetFields(type.BaseType));
-        }
-
-        protected static void SetBackingField(object instance, string backingFieldName, object value)
-        {
-            var fields = GetFields(instance.GetType());
-            var fieldInfo = fields.FirstOrDefault(_ => _.Name == backingFieldName);
-
-            if (fieldInfo != null)
-                fieldInfo.SetValue(instance, value);
-        }
-
-        private static void SetPropertyValue(Expression expression, object value)
+        public static void SetPropertyValue(Expression expression, object value)
         {
             if (expression == null) throw new ArgumentNullException(nameof(expression));
 
@@ -56,13 +38,13 @@ namespace Infrastructure
                     if (delegateExpr == null) throw new NullReferenceException();
  
                     propertyOwner = delegateExpr.DynamicInvoke();
-                    propertyInfo.SetValue(propertyOwner, value, null);
+                    propertyInfo.SetValue(propertyOwner, value);
                 }
             }
 
             if (expression is UnaryExpression)
             {
-                // Property, field or method returning a value type
+                // Property, field or method returning a value type, usually a conversion
                 var unaryExpression = (UnaryExpression)expression;
                 if (unaryExpression.Operand is MethodCallExpression)
                 {
@@ -88,5 +70,7 @@ namespace Infrastructure
         {
             SetPropertyValue(expression.Body, value);
         }
+
+
     }
 }

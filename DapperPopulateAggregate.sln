@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34009.444
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DapperPopulateAggregate", "DapperPopulateAggregate\DapperPopulateAggregate.csproj", "{7AB675AB-073A-4B61-A56F-A9A371A846CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DapperPopulateAggregate", "DapperPopulateAggregate\DapperPopulateAggregate.csproj", "{7AB675AB-073A-4B61-A56F-A9A371A846CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{CDBF732B-06EB-40BD-B9F0-8DAAA1C59F6D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{CDBF732B-06EB-40BD-B9F0-8DAAA1C59F6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{8825D865-F178-4176-BAB9-0288F989D3CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{8825D865-F178-4176-BAB9-0288F989D3CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -58,3 +58,87 @@ VALUES (1, 'Order-1')
 INSERT INTO OrderItem (OrderId, ProductId, Qty, PriceCharged)
 VALUES (1, 1, 1, 34500),
 	   (1, 2, 1, 39500)
+
+
+
+--DECLARE 
+--  @numCustomers AS INT,
+--  @numOrdersPerCustomer AS INT,
+--  @numOrderItemsPerOrder AS INT,
+--  @numProducts AS INT;
+
+--SELECT
+--  @numCustomers = 1200,
+--  @numOrdersPerCustomer = 1,
+--  @numOrderItemsPerOrder = 1,
+--  @numProducts = 1000;
+
+
+--DECLARE @Nums TABLE(n INT NOT NULL PRIMARY KEY);
+
+--DECLARE @max AS INT, @rc AS INT;
+--SET @max = 2000;
+--SET @rc = 1;
+
+--INSERT INTO @Nums VALUES (1);
+--WHILE @rc * 2 <= @max
+--BEGIN
+--  INSERT INTO @Nums SELECT n + @rc FROM @Nums;
+--  SET @rc = @rc * 2;
+--END
+
+--INSERT INTO @Nums 
+--  SELECT n + @rc FROM @Nums WHERE n + @rc <= @max;
+
+--DELETE FROM OrderItem
+--DELETE FROM [Order]
+--DELETE FROM Customer
+--DELETE FROM Product
+
+
+
+--DBCC CHECKIDENT ('Customer', RESEED, 0)
+--INSERT INTO Customer([Name])
+--SELECT N'Name_' + CAST(n AS VARCHAR(10)) AS [Name] FROM @Nums
+--WHERE n <= @numCustomers;
+
+--DBCC CHECKIDENT ('Product', RESEED, 0)
+--INSERT INTO Product([Name], Price)
+--SELECT N'Name_' + CAST(n AS VARCHAR(10)) AS [Name], 1.00 FROM @Nums
+--WHERE n <= @numProducts;
+
+----***********************************************************************
+
+--DBCC CHECKIDENT ('Order', RESEED, 0)
+
+--DECLARE @counter AS INT
+--SET @counter = 1;
+
+--WHILE(@counter < @numOrdersPerCustomer + 1)
+--BEGIN
+
+--	INSERT INTO [Order] (CustomerId, OrderNumber)
+--	SELECT n, 'O-' + CAST((n * @counter) AS VARCHAR(10)) AS OrderNumber FROM @Nums
+--	WHERE n < @numCustomers
+
+--	SET @counter = @counter + 1;
+--END
+
+---- *********************************************************************
+
+--DBCC CHECKIDENT ('OrderItem', RESEED, 0)
+
+--SET @counter = 1;
+--WHILE(@counter < @numOrderItemsPerOrder + 1)
+--BEGIN
+
+--	INSERT INTO OrderItem (OrderId, ProductId, Qty, PriceCharged)
+--	SELECT OrderId, ABS(CHECKSUM(NewId())) % 1000 + 1, 1, 100.00 FROM [Order]
+
+--	SET @counter = @counter + 1;
+--END
+
+--SELECT * FROM Customer
+--SELECT * FROM [Order]
+--SELECT * FROM OrderItem
+--SELECT * FROM Product

@@ -18,7 +18,7 @@ namespace Domain
 
         public int OrderItemId { get; protected set; }
         public int OrderId { get; protected set; }
-        public Product Product { get; protected set; }
+        public IReadOnlyProduct Product { get; protected set; }
         public int Qty { get; protected set; }
         public decimal PriceCharged { get; protected set; }
     }

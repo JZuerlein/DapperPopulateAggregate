@@ -31,7 +31,7 @@ namespace Infrastructure
                                WHERE CustomerId IN (SELECT CustomerId FROM @Customers);
 
                                SELECT OrderItemId, [Order].OrderId, Qty, PriceCharged,
-                                      Product.ProductId, Product.[Name], Product.Price
+                                      Product.ProductId, Product.Price, Product.[Name]
                                FROM OrderItem
                                INNER JOIN[Order] ON[Order].OrderId = OrderItem.OrderId
                                INNER JOIN Product ON Product.ProductId = OrderItem.ProductId
@@ -48,8 +48,8 @@ namespace Infrastructure
             .GetField("_orderItems", BindingFlags.NonPublic |
                                      BindingFlags.Instance)!;
 
-        private readonly FieldInfo _setOrders = typeof(Customer)
-            .GetField("_orders", BindingFlags.NonPublic |
+        public readonly FieldInfo _setOrders = typeof(Customer)
+            .GetField(Customer.OrdersFieldName, BindingFlags.NonPublic |
                                  BindingFlags.Instance)!;
 
         #endregion
@@ -93,6 +93,7 @@ namespace Infrastructure
 
                 customers = grid.Read<Customer>();
                 var orders = grid.Read<Order>();
+
                 var orderItems = grid.Read<OrderItem, Product, OrderItem>((o, p) =>
                 {
                     _setProduct.SetValue(o, p);
@@ -112,5 +113,48 @@ namespace Infrastructure
 
             return customers;
         }
+
+        //private async Task<IEnumerable<Customer>> GetWithDictionary(string sqlFilter, object param)
+        //{
+        //    IEnumerable<Customer> customers;
+
+        //    using (var connection = new SqlConnection(connStr))
+        //    {
+        //        using var grid = await connection.QueryMultipleAsync(sqlFilter + sqlBase, param);
+
+        //        customers = grid.Read<Customer>();
+
+        //        var orderGrouping = grid.Read<Order>().GroupBy(_ => _.CustomerId);
+
+        //        var orderItems = grid.Read<OrderItem, Product, OrderItem>((o, p) =>
+        //        {
+        //            _setProduct.SetValue(o, p);
+        //            return o;
+        //        }, splitOn: "ProductId");
+
+
+        //        foreach (var group in orderGrouping)
+        //        {
+        //            group.
+        //            foreach(var customer in customers)
+        //            {
+        //                _setOrders.SetValue(customer, group.)
+        //            }
+        //            _setOrders.Set
+        //        }
+
+        //        foreach (var order in orders)
+        //        {
+        //            _setOrderItems.SetValue(order, orderItems.Where(_ => _.OrderId == order.OrderId).ToList());
+        //        }
+
+        //        foreach (var customer in cMap)
+        //        {
+        //            _setOrders.SetValue(customer, orders.Where(_ => _.CustomerId == customer.CustomerId.Value).ToList());
+        //        }
+        //    }
+
+        //    return customers;
+        //}
     }
 }

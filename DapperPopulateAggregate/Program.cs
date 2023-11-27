@@ -1,8 +1,10 @@
-﻿// See https://aka.ms/new-console-template for more information
-using Infrastructure;
+﻿using Infrastructure;
 
 var repository = new CustomerRepository();
-var customers = await repository.GetByName("%j%");
+var simpleRepository = new SimpleCustomerRepositoryWithStats();
+//var customers = await simpleRepository.GetByName("%");
+
+var customers = await repository.GetByName("%");
 
 foreach (var customer in customers)
 {

@@ -6,7 +6,14 @@ using System.Threading.Tasks;
 
 namespace Domain
 {
-    public class Product
+    public interface IReadOnlyProduct
+    {
+        int ProductId { get; }
+        string Name { get; }
+        decimal Price { get; }
+    }
+
+    public class Product : IReadOnlyProduct
     {
         public Product() { }
 

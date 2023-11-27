@@ -3,9 +3,11 @@ namespace Domain
 {
     public class Customer
     {
-        private readonly List<Order> _orders = new List<Order>();
-
+        private List<Order> _orders = new List<Order>();
         public Customer() { }
+
+        public const string OrdersFieldName = nameof(_orders);
+
         public CustomerId CustomerId { get; protected set; }
         public bool IsDeceased { get; protected set; }
         public string Name { get; protected set; } = string.Empty;

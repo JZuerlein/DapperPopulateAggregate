@@ -114,47 +114,39 @@ namespace Infrastructure
             return customers;
         }
 
-        //private async Task<IEnumerable<Customer>> GetWithDictionary(string sqlFilter, object param)
-        //{
-        //    IEnumerable<Customer> customers;
+        private async Task<IEnumerable<Customer>> GetWithDictionary(string sqlFilter, object param)
+        {
+            IEnumerable<Customer> customers;
 
-        //    using (var connection = new SqlConnection(connStr))
-        //    {
-        //        using var grid = await connection.QueryMultipleAsync(sqlFilter + sqlBase, param);
+            using (var connection = new SqlConnection(connStr))
+            {
+                using var grid = await connection.QueryMultipleAsync(sqlFilter + sqlBase, param);
 
-        //        customers = grid.Read<Customer>();
+                customers = grid.Read<Customer>();
 
-        //        var orderGrouping = grid.Read<Order>().GroupBy(_ => _.CustomerId);
+                var orders = grid.Read<Order>()
+                                 .GroupBy(_ => _.CustomerId)
+                                 .ToDictionary(_ => _.Key, _ => _.ToList());
 
-        //        var orderItems = grid.Read<OrderItem, Product, OrderItem>((o, p) =>
-        //        {
-        //            _setProduct.SetValue(o, p);
-        //            return o;
-        //        }, splitOn: "ProductId");
+                var orderItems = grid.Read<OrderItem, Product, OrderItem>((o, p) =>
+                {
+                    _setProduct.SetValue(o, p);
+                    return o;
+                }, splitOn: "ProductId")
+                    .GroupBy(_ => _.OrderId)
+                    .ToDictionary(_ => _.Key, _ => _.ToList());
 
+                foreach(var customer in customers)
+                {
+                    _setOrders.SetValue(customer, orders[customer.CustomerId.Value]);
+                    foreach (var order in orders[customer.CustomerId.Value])
+                    {
+                        _setOrderItems.SetValue(order, orderItems[order.OrderId]);
+                    }
+                }
+            }
 
-        //        foreach (var group in orderGrouping)
-        //        {
-        //            group.
-        //            foreach(var customer in customers)
-        //            {
-        //                _setOrders.SetValue(customer, group.)
-        //            }
-        //            _setOrders.Set
-        //        }
-
-        //        foreach (var order in orders)
-        //        {
-        //            _setOrderItems.SetValue(order, orderItems.Where(_ => _.OrderId == order.OrderId).ToList());
-        //        }
-
-        //        foreach (var customer in cMap)
-        //        {
-        //            _setOrders.SetValue(customer, orders.Where(_ => _.CustomerId == customer.CustomerId.Value).ToList());
-        //        }
-        //    }
-
-        //    return customers;
-        //}
+            return customers;
+        }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 
 namespace Infrastructure
 {
@@ -71,6 +72,18 @@ namespace Infrastructure
             return await Get(sqlFilter, param);
         }
 
+        public async Task<IEnumerable<Customer>> GetByCustomerIdWithSortedSpans(CustomerId customerId)
+        {
+            string sqlFilter = @"DECLARE @Customers TABLE (CustomerId INT PRIMARY KEY); 
+
+                                 INSERT INTO @Customers (CustomerId)
+                                 SELECT CustomerId FROM Customer
+                                 WHERE CustomerId = @CustomerId; ";
+
+            object param = new { CustomerId = customerId.Value };
+            return await GetWithSortedSpans(sqlFilter, param);
+        }
+
         public async Task<IEnumerable<Customer>> GetByName(string searchName)
         {
             string sqlFilter = @"DECLARE @Customers TABLE (CustomerId INT PRIMARY KEY); 
@@ -81,6 +94,18 @@ namespace Infrastructure
 
             object param = new { SearchName = searchName };
             return await Get(sqlFilter, param);
+        }
+
+        public async Task<IEnumerable<Customer>> GetByNameWithSortedSpans(string searchName)
+        {
+            string sqlFilter = @"DECLARE @Customers TABLE (CustomerId INT PRIMARY KEY); 
+
+                                 INSERT INTO @Customers (CustomerId)
+                                 SELECT CustomerId FROM Customer
+                                 WHERE [Name] LIKE @SearchName; ";
+
+            object param = new { SearchName = searchName };
+            return await GetWithSortedSpans(sqlFilter, param);
         }
 
         private async Task<IEnumerable<Customer>> Get(string sqlFilter, object param)
@@ -98,6 +123,7 @@ namespace Infrastructure
                 {
                     _setProduct.SetValue(o, p);
                     return o;
+
                 }, splitOn: "ProductId");
 
                 foreach (var order in orders)
@@ -114,47 +140,70 @@ namespace Infrastructure
             return customers;
         }
 
-        //private async Task<IEnumerable<Customer>> GetWithDictionary(string sqlFilter, object param)
-        //{
-        //    IEnumerable<Customer> customers;
+        private async Task<IEnumerable<Customer>> GetWithSortedSpans(string sqlFilter, object param)
+        {
+            IEnumerable<Customer> customers;
 
-        //    using (var connection = new SqlConnection(connStr))
-        //    {
-        //        using var grid = await connection.QueryMultipleAsync(sqlFilter + sqlBase, param);
+            using (var connection = new SqlConnection(connStr))
+            {
+                using var grid = await connection.QueryMultipleAsync(sqlFilter + sqlBase, param);
 
-        //        customers = grid.Read<Customer>();
+                customers = grid.Read<Customer>();
+                var orders = grid.Read<Order>();
 
-        //        var orderGrouping = grid.Read<Order>().GroupBy(_ => _.CustomerId);
+                var orderItems = grid.Read<OrderItem, Product, OrderItem>((o, p) =>
+                {
+                    _setProduct.SetValue(o, p);
+                    return o;
+                }, splitOn: "ProductId");
 
-        //        var orderItems = grid.Read<OrderItem, Product, OrderItem>((o, p) =>
-        //        {
-        //            _setProduct.SetValue(o, p);
-        //            return o;
-        //        }, splitOn: "ProductId");
+                return BuildCustomerAggregates(customers.ToList(), orders.ToList(), orderItems.ToList());
+            }
+        }
 
+        private IEnumerable<Customer> BuildCustomerAggregates(List<Customer> c,
+                                                              List<Order> o,
+                                                              List<OrderItem> oi)
+        {
+            var sortOrderItemsByOrderId = new SortOrderItemsByOrderId();
+            var sortOrdersByCustomerId = new SortOrdersByCustomerId();
 
-        //        foreach (var group in orderGrouping)
-        //        {
-        //            group.
-        //            foreach(var customer in customers)
-        //            {
-        //                _setOrders.SetValue(customer, group.)
-        //            }
-        //            _setOrders.Set
-        //        }
+            var customers = CollectionsMarshal.AsSpan<Customer>(c);
+            var orders = CollectionsMarshal.AsSpan<Order>(o);
+            var orderItems = CollectionsMarshal.AsSpan<OrderItem>(oi);
 
-        //        foreach (var order in orders)
-        //        {
-        //            _setOrderItems.SetValue(order, orderItems.Where(_ => _.OrderId == order.OrderId).ToList());
-        //        }
+            orders.Sort();
+            orderItems.Sort(sortOrderItemsByOrderId);
 
-        //        foreach (var customer in cMap)
-        //        {
-        //            _setOrders.SetValue(customer, orders.Where(_ => _.CustomerId == customer.CustomerId.Value).ToList());
-        //        }
-        //    }
+            int start = 0;
+            int length = 0;
+            for (var i = 0; i < orders.Length; i++)
+            {
+                length = 0;
+                while (start + length < orderItems.Length && orderItems[start + length].OrderId == orders[i].OrderId)
+                {
+                    length++;
+                }
+                _setOrderItems.SetValue(orders[i], new List<OrderItem>(orderItems.Slice(start, length).ToArray()));
+                start += length;
+            }
 
-        //    return customers;
-        //}
+            orders.Sort(sortOrdersByCustomerId);
+            customers.Sort();
+
+            start = 0;
+            for (var i = 0; i < customers.Length; i++)
+            {
+                length = 0;
+                while (start + length < orders.Length && orders[start + length].CustomerId == customers[i].CustomerId.Value)
+                {
+                    length++;
+                }
+                _setOrders.SetValue(customers[i], new List<Order>(orders.Slice(start, length).ToArray()));
+                start += length;
+            }
+
+            return customers.ToArray();
+        }
     }
 }

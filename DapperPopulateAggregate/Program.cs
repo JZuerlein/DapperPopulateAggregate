@@ -2,9 +2,9 @@
 
 var repository = new CustomerRepository();
 var simpleRepository = new SimpleCustomerRepositoryWithStats();
-//var customers = await simpleRepository.GetByName("%");
+//var customers = await simpleRepository.GetByName("%2222");
 
-var customers = await repository.GetByName("%");
+var customers = await repository.GetByName("%2222%");
 
 foreach (var customer in customers)
 {

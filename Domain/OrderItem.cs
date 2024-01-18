@@ -22,4 +22,12 @@ namespace Domain
         public int Qty { get; protected set; }
         public decimal PriceCharged { get; protected set; }
     }
+
+    public class SortOrderItemsByOrderId : IComparer<OrderItem>
+    {
+        public int Compare(OrderItem x, OrderItem y)
+        {
+            return x.OrderId.CompareTo(y.OrderId);
+        }
+    }
 }

@@ -14,17 +14,31 @@ namespace ReflectionBenchmark
     public class RepositoryCompare
     {
         [Benchmark]
-        public async Task GetWithSimpleRepository()
+        public async Task GetByNameWithLinqWhere()
         {
-            var repo = new SimpleCustomerRepository();
-            var customers = await repo.GetByName("%");
+            var repo = new CustomerRepository();
+            var customers = await repo.GetByName("Name_2222%");
         }
 
         [Benchmark]
-        public async Task GetWithRepository()
+        public async Task GetByNameWithSortedSpans()
         {
             var repo = new CustomerRepository();
-            var customers = await repo.GetByName("%");
+            var customers = await repo.GetByNameWithSortedSpans("Name_2222%");
+        }
+
+        [Benchmark]
+        public async Task GetByIdWithLinqWhere()
+        {
+            var repo = new CustomerRepository();
+            var customers = await repo.GetByCustomerId(new Domain.CustomerId(2222));
+        }
+
+        [Benchmark]
+        public async Task GetByIdWithSortedSpans()
+        {
+            var repo = new CustomerRepository();
+            var customers = await repo.GetByCustomerIdWithSortedSpans(new Domain.CustomerId(2222));
         }
     }
 }
